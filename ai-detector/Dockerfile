@@ -1,0 +1,35 @@
+FROM python:3.8.10
+
+ENV KAFKA_URL="localhost:9094"
+
+ENV CONSUMER_TOPIC="inference_probs"
+
+ENV PRODUCER_TOPIC="predicted_labels"
+
+ENV CONSUMER_CLIENT_ID="ai-detector-consumer"
+
+ENV PRODUCER_CLIENT_ID="ai-detector-producer"
+
+ENV CONSUMER_GROUP_ID="ai-detector"
+
+RUN apt-get update -y
+
+RUN python3 -m pip install --no-cache-dir --upgrade pip
+
+RUN python3 -m pip install --upgrade setuptools wheel pip-tools
+
+WORKDIR /usr/app/src
+
+RUN mkdir output_csv
+
+COPY files/requirements.txt ./
+
+RUN python3 -m pip install dill
+
+RUN python3 -m pip install -r requirements.txt
+
+COPY files/ai_detector.py ./
+
+ENV TZ="Europe/Madrid"
+
+CMD python3 ./ai_detector.py --kafka_url=$KAFKA_URL --consumer_topic=$CONSUMER_TOPIC --producer_topic=$PRODUCER_TOPIC --consumer_client_id=$CONSUMER_CLIENT_ID --producer_client_id=$PRODUCER_CLIENT_ID --consumer_group_id=$CONSUMER_GROUP_ID

@@ -1,0 +1,91 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "c928d861-db66-4901-97cb-e7807c94e1e0",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "Mensajes_leidos=\n",
+    "{\n",
+    "TopicPartition(topic='inference_probs', partition=0): \n",
+    "\t[\n",
+    "\tConsumerRecord(topic='inference_probs', partition=0, offset=654, timestamp=1724024093431, timestamp_type=0, key=None, \n",
+    "                   value={'data': array([[0., 0., 1.]]), \n",
+    "                          'metadata': [{'src_ip': '10.0.81.1', 'dst_ip': '10.0.80.1', 'src_port': 4237, 'dst_port': 53, 'protocol': 17, 'first': 1720708258435, 'timestamp': 1720708259.476, \n",
+    "                                        'timestamp_nfstream': 1724024093.351543, 'timestamp_inference': 1724024093.367447, 'flow_bytes': 919, 'flow_pkts': 3, 'monitored_device': 'ceos2', 'interface': 'eth3'}], \n",
+    "                          'label_correspondence': {0: 'normal_traffic', 1: 'benign_heavy_hitter', 2: 'malign_heavy_hitter'}}, \n",
+    "                   headers=[('version', b'v1')], checksum=None, serialized_key_size=-1, serialized_value_size=552, serialized_header_size=9\n",
+    "                  )\n",
+    "\t], \n",
+    "\n",
+    "TopicPartition(topic='inference_probs', partition=3): \n",
+    "    [\n",
+    "    ConsumerRecord(topic='inference_probs', partition=3, offset=690, timestamp=1724024093436, timestamp_type=0, key=None, \n",
+    "                   value={'data': array([[0., 0., 1.], [0., 0., 1.]]), \n",
+    "                          'metadata': [{'src_ip': '10.0.81.1', 'dst_ip': '10.0.80.1', 'src_port': 40731, 'dst_port': 53, 'protocol': 17, 'first': 1720708258428, 'timestamp': 1720708259.508, \n",
+    "                                        'timestamp_nfstream': 1724024093.24773, 'timestamp_inference': 1724024093.372098, 'flow_bytes': 132, 'flow_pkts': 2, 'monitored_device': 'ceos2', 'interface': 'eth3'}, \n",
+    "                                       {'src_ip': '10.0.81.1', 'dst_ip': '10.0.80.1', 'src_port': 46495, 'dst_port': 53, 'protocol': 17, 'first': 1720708258442, 'timestamp': 1720708259.476, \n",
+    "                                        'timestamp_nfstream': 1724024093.302488, 'timestamp_inference': 1724024093.372499, 'flow_bytes': 1767, 'flow_pkts': 4, 'monitored_device': 'ceos2', 'interface': 'eth3'}], \n",
+    "                          'label_correspondence': {0: 'normal_traffic', 1: 'benign_heavy_hitter', 2: 'malign_heavy_hitter'}}, \n",
+    "                   headers=[('version', b'v1')], checksum=None, serialized_key_size=-1, serialized_value_size=739, serialized_header_size=9\n",
+    "                  )\n",
+    "    ], \n",
+    "\n",
+    "TopicPartition(topic='inference_probs', partition=1): \n",
+    "    [\n",
+    "    ConsumerRecord(topic='inference_probs', partition=1, offset=721, timestamp=1724024093406, timestamp_type=0, key=None, \n",
+    "                    value={'data': array([[0., 0., 1.],[1., 0., 0.],[1., 0., 0.]]), \n",
+    "                           'metadata': [{'src_ip': '11.0.4.1', 'dst_ip': '10.0.80.1', 'src_port': 37568, 'dst_port': 80, 'protocol': 17, 'first': 1720708257359, 'timestamp': 1720708259.428, \n",
+    "                                         'timestamp_nfstream': 1724024093.176945, 'timestamp_inference': 1724024093.342009, 'flow_bytes': 2400, 'flow_pkts': 2, 'monitored_device': 'ceos2', 'interface': 'eth3'}, \n",
+    "                                        {'src_ip': '10.0.80.1', 'dst_ip': '10.0.81.1', 'src_port': 53, 'dst_port': 2990, 'protocol': 17, 'first': 1720708258705, 'timestamp': 1720708259.476, \n",
+    "                                         'timestamp_nfstream': 1724024093.181854, 'timestamp_inference': 1724024093.342258, 'flow_bytes': 1081, 'flow_pkts': 2, 'monitored_device': 'ceos2', 'interface': 'eth3'}, \n",
+    "                                        {'src_ip': '10.0.80.1', 'dst_ip': '10.0.81.1', 'src_port': 53, 'dst_port': 44765, 'protocol': 17, 'first': 1720708258565, 'timestamp': 1720708259.476, \n",
+    "                                         'timestamp_nfstream': 1724024093.212585, 'timestamp_inference': 1724024093.342387, 'flow_bytes': 898, 'flow_pkts': 2, 'monitored_device': 'ceos2', 'interface': 'eth3'}], \n",
+    "                           'label_correspondence': {0: 'normal_traffic', 1: 'benign_heavy_hitter', 2: 'malign_heavy_hitter'}}, \n",
+    "                    headers=[('version', b'v1')], checksum=None, serialized_key_size=-1, serialized_value_size=926, serialized_header_size=9), \n",
+    "     \n",
+    "    ConsumerRecord(topic='inference_probs', partition=1, offset=722, timestamp=1724024093435, timestamp_type=0, key=None, \n",
+    "                    value={'data': array([[1., 0., 0.], [0., 0., 1.], [1., 0., 0.], [1., 0., 0.], [0., 0., 1.],[0., 0., 1.]]), \n",
+    "                           'metadata': [{'src_ip': '10.0.80.1', 'dst_ip': '10.0.81.1', 'src_port': 53, 'dst_port': 50184, 'protocol': 17, 'first': 1720708257930, 'timestamp': 1720708259.476, \n",
+    "                                         'timestamp_nfstream': 1724024093.224226, 'timestamp_inference': 1724024093.369664, 'flow_bytes': 134, 'flow_pkts': 2, 'monitored_device': 'ceos2', 'interface': 'eth3'},\n",
+    "                                        {'src_ip': '10.0.81.1', 'dst_ip': '10.0.80.1', 'src_port': 4646, 'dst_port': 53, 'protocol': 17, 'first': 1720708258548, 'timestamp': 1720708259.476, \n",
+    "                                         'timestamp_nfstream': 1724024093.230497, 'timestamp_inference': 1724024093.36993, 'flow_bytes': 876, 'flow_pkts': 2, 'monitored_device': 'ceos2', 'interface': 'eth3'},\n",
+    "                                        {'src_ip': '10.0.80.1', 'dst_ip': '10.0.81.1', 'src_port': 53, 'dst_port': 6838, 'protocol': 17, 'first': 1720708258811, 'timestamp': 1720708259.508, \n",
+    "                                         'timestamp_nfstream': 1724024093.262961, 'timestamp_inference': 1724024093.370101, 'flow_bytes': 913, 'flow_pkts': 2, 'monitored_device': 'ceos2', 'interface': 'eth3'}, \n",
+    "                                        {'src_ip': '10.0.80.1', 'dst_ip': '10.0.81.1', 'src_port': 53, 'dst_port': 48504, 'protocol': 17, 'first': 1720708258365, 'timestamp': 1720708259.476, \n",
+    "                                         'timestamp_nfstream': 1724024093.273511, 'timestamp_inference': 1724024093.370234, 'flow_bytes': 897, 'flow_pkts': 2, 'monitored_device': 'ceos2', 'interface': 'eth3'},\n",
+    "                                        {'src_ip': '10.0.81.1', 'dst_ip': '10.0.80.1', 'src_port': 16172, 'dst_port': 53, 'protocol': 17, 'first': 1720708257469, 'timestamp': 1720708259.476, \n",
+    "                                         'timestamp_nfstream': 1724024093.279164, 'timestamp_inference': 1724024093.370372, 'flow_bytes': 1787, 'flow_pkts': 4, 'monitored_device': 'ceos2', 'interface': 'eth3'}, \n",
+    "                                        {'src_ip': '11.0.4.1', 'dst_ip': '10.0.80.1', 'src_port': 40695, 'dst_port': 80, 'protocol': 17, 'first': 1720708257452, 'timestamp': 1720708259.508, \n",
+    "                                         'timestamp_nfstream': 1724024093.294947, 'timestamp_inference': 1724024093.370508, 'flow_bytes': 2400, 'flow_pkts': 2, 'monitored_device': 'ceos2', 'interface': 'eth3'}], \n",
+    "                           'label_correspondence': {0: 'normal_traffic', 1: 'benign_heavy_hitter', 2: 'malign_heavy_hitter'}}, \n",
+    "                    headers=[('version', b'v1')], checksum=None, serialized_key_size=-1, serialized_value_size=1486, serialized_header_size=9)\n",
+    "    ]\n",
+    "}"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.19"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

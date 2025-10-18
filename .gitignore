@@ -1,0 +1,17 @@
+nfstream/pcaps/*
+Graficas/*
+tmp/*
+ai-monitoring/files/output_csv/*
+yourfile.pcap
+nfstream/pcaps/*
+Graficas/*
+tmp/*
+ai-monitoring/files/output_csv/*
+yourfile.pcap
+*.pcap
+*.csv
+*/.ipynb_checkpoints/*
+.ipynb_checkpoints
+nfstream/scripts_demo/
+nfstream/no_vale/
+__pycache__

@@ -1,0 +1,423 @@
+#
+# Todas las variables de "environment" definidas aqui machacan a las definidas internamente en los dockerfiles para las imagenes
+#
+
+services:
+#  influxdb:
+#    build:
+#      context: ./influxdb
+#    network_mode: "host"
+#    image: influx
+#    container_name: influxdb
+#    ports:
+#      - "8086:8086"
+#    healthcheck:
+#      test: "curl -f http://localhost:8086/ping"
+#      interval: 5s
+#      timeout: 10s
+#      retries: 50
+#    pull_policy: build
+
+  ai-catalog:
+    build:
+      context: ./ai-catalog
+    network_mode: "host"
+    image: ai-catalog
+    container_name: ai-catalog
+    ports:
+      - "9200:9200"
+    healthcheck:
+        test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+        interval: 30s
+        timeout: 30s
+        retries: 3
+    pull_policy: build
+    volumes:
+      - catalog_data:/var/lib/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms7g -Xmx7g
+    
+  model-upload:
+    build:
+      context: ./model-upload
+    network_mode: "host"
+    image: model-upload
+    container_name: model-upload
+    pull_policy: build
+    volumes:
+      - ./model-upload/files/models/:/usr/app/src/models/
+    environment:
+      - MODELS_PATH=./models/rev4
+      - MODEL=random_forest_train_ceos2_eth3_rev4_ronda1_t_lim_0.5s_20estimators_all.joblib
+
+  kafka:
+    build:
+      context: ./storage_services
+    image: kafka
+    networks:
+      - app-tier
+    volumes:
+      - "kafka_data:/bitnami"
+    ports:
+      - "9094:9094"
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - N_PARTITIONS_PER_TOPIC=8
+    container_name: kafka
+    healthcheck:
+      test: kafka-topics.sh --list --bootstrap-server localhost:9092 || exit 1
+      interval: 1s
+      timeout: 60s
+      retries: 60
+    pull_policy: build
+    
+#  grafana:
+#    build:
+#      context: ./grafana
+#    network_mode: "host"
+#    image: grafana
+#    depends_on:
+#      influxdb:
+#        condition: service_healthy
+#      kafka:
+#        condition: service_started
+#    container_name: grafana
+#    ports:
+#      - "3000:3000"
+#    healthcheck:
+#      test: ["CMD-SHELL", "curl -f localhost:3000/api/health && echo 'ready'"]
+#      interval: 10s
+#      retries: 30
+#    pull_policy: build
+#    volumes:
+#      - grafana_data:/var/lib/grafana
+    
+#  ai-monitoring:
+#    build:
+#      context: ./ai-monitoring
+#    network_mode: "host"
+#    image: ai-monitoring
+#    depends_on:
+#      influxdb:
+#        condition: service_healthy
+#      kafka:
+#        condition: service_healthy
+#    container_name: ai-monitoring
+#    pull_policy: build
+#    volumes:
+#      - "./ai-monitoring/files/output_csv:/usr/app/src/output_csv"
+#    healthcheck:
+#      test: sleep 5
+    
+  ai-detector-1:
+    build:
+      context: ./ai-detector
+    network_mode: "host"
+    image: ai-detector
+    depends_on:
+#      ai-monitoring:
+#        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-detector-consumer-1
+      - PRODUCER_CLIENT_ID=ai-detector-producer-1
+    volumes:
+      - ./ai-detector/output1:/usr/app/src/output_csv/
+    container_name: ai-detector-1
+    pull_policy: build
+
+  ai-detector-2:
+    build:
+      context: ./ai-detector
+    network_mode: "host"
+    image: ai-detector
+    depends_on:
+#      ai-monitoring:
+#        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-detector-consumer-2
+      - PRODUCER_CLIENT_ID=ai-detector-producer-2
+    volumes:
+      - ./ai-detector/output2:/usr/app/src/output_csv/
+    container_name: ai-detector-2
+    pull_policy: build
+
+  ai-detector-3:
+    build:
+      context: ./ai-detector
+    network_mode: "host"
+    image: ai-detector
+    depends_on:
+#      ai-monitoring:
+#        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-detector-consumer-3
+      - PRODUCER_CLIENT_ID=ai-detector-producer-3
+    volumes:
+      - ./ai-detector/output3:/usr/app/src/output_csv/
+    container_name: ai-detector-3
+    pull_policy: build
+
+  ai-detector-4:
+    build:
+      context: ./ai-detector
+    network_mode: "host"
+    image: ai-detector
+    depends_on:
+#      ai-monitoring:
+#        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-detector-consumer-4
+      - PRODUCER_CLIENT_ID=ai-detector-producer-4
+    volumes:
+      - ./ai-detector/output4:/usr/app/src/output_csv/
+    container_name: ai-detector-4
+    pull_policy: build
+
+  ai-inference-1:
+    build:
+      context: ./ai-inference
+    network_mode: "host"
+    image: ai-inference
+    depends_on:
+      ai-detector-1:
+        condition: service_started
+      ai-catalog:
+        condition: service_healthy
+      model-upload:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-inference-consumer-1
+      - PRODUCER_CLIENT_ID=ai-inference-producer-1
+    container_name: ai-inference-1
+    pull_policy: build
+    
+  ai-inference-2:
+    build:
+      context: ./ai-inference
+    network_mode: "host"
+    image: ai-inference
+    depends_on:
+      ai-detector-1:
+        condition: service_started
+      ai-catalog:
+        condition: service_healthy
+      model-upload:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-inference-consumer-2
+      - PRODUCER_CLIENT_ID=ai-inference-producer-2
+    container_name: ai-inference-2
+    pull_policy: build
+
+  ai-inference-3:
+    build:
+      context: ./ai-inference
+    network_mode: "host"
+    image: ai-inference
+    depends_on:
+      ai-detector-1:
+        condition: service_started
+      ai-catalog:
+        condition: service_healthy
+      model-upload:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-inference-consumer-3
+      - PRODUCER_CLIENT_ID=ai-inference-producer-3
+    container_name: ai-inference-3
+    pull_policy: build
+
+  ai-inference-4:
+    build:
+      context: ./ai-inference
+    network_mode: "host"
+    image: ai-inference
+    depends_on:
+      ai-detector-1:
+        condition: service_started
+      ai-catalog:
+        condition: service_healthy
+      model-upload:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-inference-consumer-4
+      - PRODUCER_CLIENT_ID=ai-inference-producer-4
+    container_name: ai-inference-4
+    pull_policy: build
+
+  ai-inference-5:
+    build:
+      context: ./ai-inference
+    network_mode: "host"
+    image: ai-inference
+    depends_on:
+      ai-detector-1:
+        condition: service_started
+      ai-catalog:
+        condition: service_healthy
+      model-upload:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-inference-consumer-5
+      - PRODUCER_CLIENT_ID=ai-inference-producer-5
+    container_name: ai-inference-5
+    pull_policy: build
+
+  ai-inference-6:
+    build:
+      context: ./ai-inference
+    network_mode: "host"
+    image: ai-inference
+    depends_on:
+      ai-detector-1:
+        condition: service_started
+      ai-catalog:
+        condition: service_healthy
+      model-upload:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-inference-consumer-6
+      - PRODUCER_CLIENT_ID=ai-inference-producer-6
+    container_name: ai-inference-6
+    pull_policy: build
+
+  ai-inference-7:
+    build:
+      context: ./ai-inference
+    network_mode: "host"
+    image: ai-inference
+    depends_on:
+      ai-detector-1:
+        condition: service_started
+      ai-catalog:
+        condition: service_healthy
+      model-upload:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-inference-consumer-7
+      - PRODUCER_CLIENT_ID=ai-inference-producer-7
+    container_name: ai-inference-7
+    pull_policy: build
+    
+  ai-inference-8:
+    build:
+      context: ./ai-inference
+    network_mode: "host"
+    image: ai-inference
+    depends_on:
+      ai-detector-1:
+        condition: service_started
+      ai-catalog:
+        condition: service_healthy
+      model-upload:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      - CONSUMER_CLIENT_ID=ai-inference-consumer-8
+      - PRODUCER_CLIENT_ID=ai-inference-producer-8
+    container_name: ai-inference-8
+    pull_policy: build
+    
+  nfstream:
+    build:
+      context: ./nfstream
+      #dockerfile: ./Dockerfile_reader
+    network_mode: "host"
+    image: nfstream
+    depends_on:
+      ai-inference-1:
+        condition: service_started
+      ai-inference-2:
+        condition: service_started
+      ai-inference-3:
+        condition: service_started
+      ai-inference-4:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      # COMENTAR PARA HACER PRUEBAS
+      #grafana:
+      #  condition: service_healthy
+    volumes:
+      - ./nfstream/pcaps:/app/pcaps
+      - ./nfstream/snapshots:/app/snapshots
+    environment:
+      - N_ROUND=1
+      - CAPTURE_MODE=pcap-freno
+      #- CAPTURE_MODE=pcap
+      #- CAPTURE_MODE=network
+      #- PCAP_FILENAME=repetidor_pcap_7_min.pcap
+      # - PCAP_FILENAME=repetidor_pcap_8_min_alb_1.pcap
+      #- PCAP_FILENAME=ceos2_eth3_rev4_testing.pcap
+      #- PCAP_FILENAME=ceos2_eth3_rev4_training.pcap
+      #- PCAP_FILENAME=serenity_ruido_fondo_pcap_3600_alb_1.pcap
+      #- PCAP_FILENAME=ceos2_eth3_rev4_testing.pcap
+      #- PCAP_FILENAME=salida_alb1.pcap
+      #- PCAP_FILENAME=captura-original-javier.pcap
+      - PCAP_FILENAME=captura-tcpdump-tid-12-12-24.pcap
+      #- PCAP_FILENAME=switch_scp_550s_alb_1.pcap
+      #- PCAP_FILENAME=repetidor_pcap_8_min_alb_1.pcap
+      - PCAP_PATH=/app/pcaps
+      #- Volcar_snapshots_csv=True
+      - Volcar_snapshots_csv=True
+      - T_LIM=0.5
+      - KAFKA_URL=localhost:9094
+      - PRODUCER_TOPIC=inference_data
+      - PRODUCER_CLIENT_ID=nfstream-producer
+      - MODE=kafka
+      - MONITORED_DEVICE=ceos2
+      - INTERFACE=enp6s0
+      - PARTITIONS_INF_DATA=2
+      - PARTITIONS_INF_PROBS=2
+      - PARTITIONS_PRED_LABELS=2
+      
+      #- FEATURE_NAMES='udps.protocol,udps.src2dst_last,udps.dst2src_last,udps.src2dst_pkts_data,udps.dst2src_pkts_data,src2dst_bytes,dst2src_bytes,udps.diff_dst_src_first'
+    container_name: nfstream
+    pull_policy: build
+
+
+    
+volumes:
+  kafka_data:
+    driver: local
+  catalog_data:
+    driver: local
+#  grafana_data:
+#    driver: local
+networks:
+  app-tier:
+    driver: bridge

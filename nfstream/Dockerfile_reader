@@ -1,0 +1,41 @@
+FROM python:3.11
+
+RUN apt-get update && apt-get upgrade && apt-get install -y \
+	libpcap0.8-dev \
+	libuv1-dev
+
+RUN pip install --no-cache-dir --upgrade pip
+
+RUN pip install --upgrade pip setuptools wheel pip-tools
+
+RUN mkdir /app
+RUN mkdir /app/pcaps
+RUN mkdir /app/output
+RUN mkdir /app/output_kafka
+COPY requirements.in /app
+RUN pip-compile --output-file=/app/requirements.txt /app/requirements.in
+RUN pip install -r /app/requirements.txt
+COPY scripts/ /app/scripts/
+
+WORKDIR /app/scripts
+
+ENV TZ="Europe/Madrid"
+ENV OUTPUT_PATH="/app/output_kafka"
+ENV OUTPUT_FILENAME=""
+ENV PCAP_PATH="/app/pcaps"
+ENV PCAP_FILENAME="ceos2_eth3_rev4_training.pcap"
+ENV T_LIM=0.1
+ENV DELIM_CSV="'*'"
+ENV KAFKA_URL="localhost:9094"
+ENV PRODUCER_TOPIC="inference_data"
+ENV PRODUCER_CLIENT_ID="nfstream-producer"
+ENV MODE="csv"
+ENV MONITORED_DEVICE="ceos2"
+ENV INTERFACE="eth3"
+ENV N_ROUND=2
+ENV CUSTOM_IDLE_TIMEOUT=0.01
+ENV FEATURE_NAMES="udps.protocol,udps.src2dst_last,udps.dst2src_last,udps.src2dst_pkts_data,udps.dst2src_pkts_data,src2dst_bytes,dst2src_bytes,udps.diff_dst_src_first"
+
+RUN chmod +x /app/scripts/entrypoint.sh
+
+CMD /app/scripts/entrypoint.sh $OUTPUT_PATH $OUTPUT_FILENAME $PCAP_PATH $PCAP_FILENAME $T_LIM $DELIM_CSV $MODE $MONITORED_DEVICE $INTERFACE $N_ROUND $FEATURE_NAMES $KAFKA_URL $PRODUCER_TOPIC
