@@ -185,8 +185,10 @@ class AIDetector:
                         #labels, ml_confidence, count_per_class = self.get_labels(probs, label_correspondence)
                         labels, metadatas, count_per_class = self.get_labels_x(probs, label_correspondence,metadatas,t_get_kafka)
                         if "malign_heavy_hitter" in labels:
+                            recv_time = time.time()
                             LOGGER.info("First malign heavy hitter snapshot received.")
                             LOGGER.info("Snapshot: %s", metadatas[labels.index("malign_heavy_hitter")])
+                            LOGGER.info(f"Response time: {recv_time}-{metadatas[labels.index('malign_heavy_hitter')]['timestamp_nfstream']}={recv_time-metadatas[labels.index('malign_heavy_hitter')]['timestamp_nfstream']}")
                             time.sleep(3600)
 
                         all_labels+= labels
