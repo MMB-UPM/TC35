@@ -1,23 +1,4 @@
-#
-# Todas las variables de "environment" definidas aqui machacan a las definidas internamente en los dockerfiles para las imagenes
-#
-
 services:
-#  influxdb:
-#    build:
-#      context: ./influxdb
-#    network_mode: "host"
-#    image: influx
-#    container_name: influxdb
-#    ports:
-#      - "8086:8086"
-#    healthcheck:
-#      test: "curl -f http://localhost:8086/ping"
-#      interval: 5s
-#      timeout: 10s
-#      retries: 50
-#    pull_policy: build
-
   ai-catalog:
     build:
       context: ./ai-catalog
@@ -81,53 +62,13 @@ services:
       timeout: 60s
       retries: 60
     pull_policy: build
-    
-#  grafana:
-#    build:
-#      context: ./grafana
-#    network_mode: "host"
-#    image: grafana
-#    depends_on:
-#      influxdb:
-#        condition: service_healthy
-#      kafka:
-#        condition: service_started
-#    container_name: grafana
-#    ports:
-#      - "3000:3000"
-#    healthcheck:
-#      test: ["CMD-SHELL", "curl -f localhost:3000/api/health && echo 'ready'"]
-#      interval: 10s
-#      retries: 30
-#    pull_policy: build
-#    volumes:
-#      - grafana_data:/var/lib/grafana
-    
-#  ai-monitoring:
-#    build:
-#      context: ./ai-monitoring
-#    network_mode: "host"
-#    image: ai-monitoring
-#    depends_on:
-#      influxdb:
-#        condition: service_healthy
-#      kafka:
-#        condition: service_healthy
-#    container_name: ai-monitoring
-#    pull_policy: build
-#    volumes:
-#      - "./ai-monitoring/files/output_csv:/usr/app/src/output_csv"
-#    healthcheck:
-#      test: sleep 5
-    
+
   ai-detector-1:
     build:
       context: ./ai-detector
     network_mode: "host"
     image: ai-detector
     depends_on:
-#      ai-monitoring:
-#        condition: service_healthy
       kafka:
         condition: service_healthy
     environment:
@@ -144,8 +85,6 @@ services:
     network_mode: "host"
     image: ai-detector
     depends_on:
-#      ai-monitoring:
-#        condition: service_healthy
       kafka:
         condition: service_healthy
     environment:
@@ -162,8 +101,6 @@ services:
     network_mode: "host"
     image: ai-detector
     depends_on:
-#      ai-monitoring:
-#        condition: service_healthy
       kafka:
         condition: service_healthy
     environment:
@@ -180,8 +117,6 @@ services:
     network_mode: "host"
     image: ai-detector
     depends_on:
-#      ai-monitoring:
-#        condition: service_healthy
       kafka:
         condition: service_healthy
     environment:
@@ -369,31 +304,15 @@ services:
         condition: service_started
       kafka:
         condition: service_healthy
-      # COMENTAR PARA HACER PRUEBAS
-      #grafana:
-      #  condition: service_healthy
     volumes:
       - ./nfstream/pcaps:/app/pcaps
       - ./nfstream/snapshots:/app/snapshots
     environment:
       - N_ROUND=1
       - CAPTURE_MODE=pcap-freno
-      #- CAPTURE_MODE=pcap
-      #- CAPTURE_MODE=network
-      #- PCAP_FILENAME=repetidor_pcap_7_min.pcap
-      # - PCAP_FILENAME=repetidor_pcap_8_min_alb_1.pcap
-      #- PCAP_FILENAME=ceos2_eth3_rev4_testing.pcap
-      #- PCAP_FILENAME=ceos2_eth3_rev4_training.pcap
-      #- PCAP_FILENAME=serenity_ruido_fondo_pcap_3600_alb_1.pcap
-      #- PCAP_FILENAME=ceos2_eth3_rev4_testing.pcap
-      #- PCAP_FILENAME=salida_alb1.pcap
-      #- PCAP_FILENAME=captura-original-javier.pcap
-      - PCAP_FILENAME=captura-tcpdump-tid-12-12-24.pcap
-      #- PCAP_FILENAME=switch_scp_550s_alb_1.pcap
-      #- PCAP_FILENAME=repetidor_pcap_8_min_alb_1.pcap
+      - PCAP_FILENAME=ceos2_eth3_rev4_testing.pcap
       - PCAP_PATH=/app/pcaps
-      #- Volcar_snapshots_csv=True
-      - Volcar_snapshots_csv=True
+      - Volcar_snapshots_csv=False
       - T_LIM=0.5
       - KAFKA_URL=localhost:9094
       - PRODUCER_TOPIC=inference_data
@@ -404,8 +323,6 @@ services:
       - PARTITIONS_INF_DATA=2
       - PARTITIONS_INF_PROBS=2
       - PARTITIONS_PRED_LABELS=2
-      
-      #- FEATURE_NAMES='udps.protocol,udps.src2dst_last,udps.dst2src_last,udps.src2dst_pkts_data,udps.dst2src_pkts_data,src2dst_bytes,dst2src_bytes,udps.diff_dst_src_first'
     container_name: nfstream
     pull_policy: build
 
@@ -416,8 +333,6 @@ volumes:
     driver: local
   catalog_data:
     driver: local
-#  grafana_data:
-#    driver: local
 networks:
   app-tier:
     driver: bridge
